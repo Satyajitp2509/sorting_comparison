@@ -1,50 +1,88 @@
-/// Quick Sort - Optimized implementation with median-of-three pivot selection
-void quickSort(List<int> arr, [int low = 0, int? high]) {
-  high ??= arr.length - 1;
+// quick_sort_demo.dart
+import 'dart:math';
+
+void main() {
+  // Generate a random list of numbers
+  final random = Random();
+  final numbers = List.generate(20, (_) => random.nextInt(100));
+  
+  print('Original list: $numbers');
+  
+  // Create a copy to sort
+  final sortedNumbers = List.of(numbers);
+  quickSort(sortedNumbers);
+  
+  print('Sorted list:   $sortedNumbers');
+  
+  // Verify the sorting is correct
+  final correctlySorted = _isSorted(sortedNumbers);
+  print('Correctly sorted? $correctlySorted');
+  
+  // Benchmark performance
+  final largeList = List.generate(10000, (_) => random.nextInt(100000));
+  print('\nBenchmarking with 10,000 elements...');
+  
+  final stopwatch = Stopwatch()..start();
+  quickSort(List.of(largeList));
+  stopwatch.stop();
+  
+  print('Quick Sort completed in ${stopwatch.elapsedMilliseconds}ms');
+}
+
+/// Quick Sort implementation (ascending order)
+void quickSort(List<int> list, [int low = 0, int? high]) {
+  high ??= list.length - 1;
   if (low < high) {
-    // Partition the array and get the pivot index
-    final pivotIndex = _partition(arr, low, high);
-    
-    // Recursively sort elements before and after partition
-    quickSort(arr, low, pivotIndex - 1);
-    quickSort(arr, pivotIndex + 1, high);
+    final pivotIndex = _partition(list, low, high);
+    quickSort(list, low, pivotIndex - 1);
+    quickSort(list, pivotIndex + 1, high);
   }
 }
 
-/// Helper function to partition the array
-int _partition(List<int> arr, int low, int high) {
+/// Partitioning with median-of-three optimization
+int _partition(List<int> list, int low, int high) {
   // Median-of-three pivot selection
   final mid = low + (high - low) ~/ 2;
-  _medianOfThree(arr, low, mid, high);
-  final pivot = arr[mid];
+  _medianOfThree(list, low, mid, high);
+  final pivotValue = list[mid];
   
   // Move pivot to end temporarily
-  _swap(arr, mid, high);
+  _swap(list, mid, high);
   
-  int i = low - 1;
+  int storeIndex = low;
   
-  for (int j = low; j < high; j++) {
-    if (arr[j] < pivot) {
-      i++;
-      _swap(arr, i, j);
+  for (int i = low; i < high; i++) {
+    if (list[i] < pivotValue) {
+      _swap(list, storeIndex, i);
+      storeIndex++;
     }
   }
   
-  // Move pivot to its correct position
-  _swap(arr, i + 1, high);
-  return i + 1;
+  // Move pivot to final position
+  _swap(list, storeIndex, high);
+  return storeIndex;
 }
 
-/// Optimizes pivot selection to avoid worst-case O(n²) scenarios
-void _medianOfThree(List<int> arr, int low, int mid, int high) {
-  if (arr[low] > arr[mid]) _swap(arr, low, mid);
-  if (arr[low] > arr[high]) _swap(arr, low, high);
-  if (arr[mid] > arr[high]) _swap(arr, mid, high);
+/// Optimizes pivot selection to avoid worst-case O(n²)
+void _medianOfThree(List<int> list, int a, int b, int c) {
+  if (list[a] > list[b]) _swap(list, a, b);
+  if (list[a] > list[c]) _swap(list, a, c);
+  if (list[b] > list[c]) _swap(list, b, c);
 }
 
-/// Helper function to swap elements
-void _swap(List<int> arr, int i, int j) {
-  final temp = arr[i];
-  arr[i] = arr[j];
-  arr[j] = temp;
+/// Swaps elements in the list
+void _swap(List<int> list, int i, int j) {
+  final temp = list[i];
+  list[i] = list[j];
+  list[j] = temp;
+}
+
+/// Helper function to check if list is sorted
+bool _isSorted(List<int> list) {
+  for (int i = 0; i < list.length - 1; i++) {
+    if (list[i] > list[i + 1]) {
+      return false;
+    }
+  }
+  return true;
 }
